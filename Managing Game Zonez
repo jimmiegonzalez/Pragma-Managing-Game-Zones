@@ -1,0 +1,103 @@
+/**
+ * World object for managing game zones which is a collection of rooms and items.
+ */
+class World {
+	constructor() {
+		//a list of all instantiated rooms, indexed by zone and roomtype
+		this.roomObjs = {}
+		//a list of all instantiated items, indexed by zone and roomtype
+		this.items = {}
+	}
+
+	/**
+	 * 
+	 * @param {string} zone 
+	 * @param {Array<roomtype>} zoneData 
+	 */
+	addZone(zone, zoneData) {
+		//initialize a list of rooms for this new zone
+		this.roomObjs[zone] = []
+		//initialize a list of items for this new zone
+		this.items[zone] = []
+		//iterate through list of all included room types and spawn new rooms
+		zoneData.forEach(roomType => {
+			//instantiate a room of the provided type and add it into the world
+			this.roomObjs[zone][roomType.name] = new roomType()
+			//instantiate an empty list of items that this room contains
+			this.items[zone][roomType.name] = []
+		})
+	}
+
+	/**
+	 * 
+	 * @param {string} zone 
+	 * @param {roomtype} room 
+	 * @returns instantiated room object
+	 */
+	getRoom(zone, room) {
+		//lookup the instantiated room using the zone and room type as keys
+		return this.roomObjs[zone][room.name]
+	}
+
+	/**
+	 * 
+	 * @param {string} zone 
+	 * @param {roomtype} room 
+	 * @param {Array<itemtype>} roomItems 
+	 */
+	addItems(zone, room, roomItems) {
+		//iterate over all of the room types
+		for (let i = 0; i < roomItems.length; i++) {
+			//instantiate a new item of this type
+			let roomItem = new roomItems[i]()
+			//add the item into the item list for the specified room
+			this.items[zone][room.name].push(roomItem)
+		}
+	}
+
+	/**
+	 * 
+	 * @param {string} zone 
+	 * @param {roomtype} room 
+	 * @returns a list of the item instances in this room
+	 */
+	getItems(zone, room) {
+		return this.items[zone][room.name]
+	}
+
+	/**
+	 * 
+	 * @param {itemtype} itemKey 
+	 * @param {playerPosition} pos 
+	 * @returns the item if found or null
+	 */
+	takeItem(itemKey, pos) {
+		//get all of the items in the current room
+		let roomItems = this.getItems(pos.zone, pos.room)
+
+		//iterate over each item
+		for (let i = 0; i < roomItems.length; i++) {
+			//if this item can be identified by the provided key
+			if (roomItems[i].keys.includes(itemKey)) {
+				//remove the item from the room's item list
+				let item = roomItems.splice(i, 1)
+				// return the item instance
+				return item[0]
+			}
+		}
+		//if no item matches, return null
+		return null
+	}
+
+	/**
+	 * 
+	 * @param {item} item 
+	 * @param {playerPosition} pos 
+	 */
+	giveItem(item, pos) {
+		//push the item instance into the room's item list
+		this.items[pos.zone][pos.room.name].push(item)
+	}
+}
+
+var world = new World()
